@@ -18,8 +18,7 @@ class LogicXLoomFlutterApp extends StatefulWidget {
 class _LogicXLoomFlutterAppState extends State<LogicXLoomFlutterApp> {
   final _navigatorKey = GlobalKey<NavigatorState>();
   final _sessionStore = const SessionStore();
-  late LogicXLoomEnvironment _environment;
-  late LogicXLoomApi _api;
+  late final LogicXLoomApi _api;
   UserSession? _session;
   var _isStarting = true;
   var _updateChecked = false;
@@ -27,8 +26,7 @@ class _LogicXLoomFlutterAppState extends State<LogicXLoomFlutterApp> {
   @override
   void initState() {
     super.initState();
-    _environment = AppConfig.defaultEnvironment;
-    _api = LogicXLoomApi(AppConfig.apiUrlFor(_environment));
+    _api = LogicXLoomApi(AppConfig.apiUrl);
     _restoreSession();
   }
 
@@ -40,7 +38,7 @@ class _LogicXLoomFlutterAppState extends State<LogicXLoomFlutterApp> {
           accessToken: token,
           profile: await _api.session(token),
         );
-      } else if (AppConfig.canAutoLoginForDevelopment(_environment)) {
+      } else if (AppConfig.canAutoLoginForDevelopment()) {
         _session = await _api.developmentSignIn();
         await _sessionStore.saveToken(_session!.accessToken);
       }
@@ -76,14 +74,6 @@ class _LogicXLoomFlutterAppState extends State<LogicXLoomFlutterApp> {
   Future<void> _signedIn(UserSession session) async {
     await _sessionStore.saveToken(session.accessToken);
     if (mounted) setState(() => _session = session);
-  }
-
-  void _selectEnvironment(LogicXLoomEnvironment environment) {
-    if (_environment == environment) return;
-    setState(() {
-      _environment = environment;
-      _api = LogicXLoomApi(AppConfig.apiUrlFor(environment));
-    });
   }
 
   Future<void> _signOut() async {
@@ -125,13 +115,7 @@ class _LogicXLoomFlutterAppState extends State<LogicXLoomFlutterApp> {
       home: _isStarting
           ? const _StartingPage()
           : _session == null
-          ? LoginPage(
-              key: ValueKey(_environment),
-              api: _api,
-              environment: _environment,
-              onEnvironmentChanged: _selectEnvironment,
-              onSignedIn: _signedIn,
-            )
+          ? LoginPage(api: _api, onSignedIn: _signedIn)
           : DashboardPage(api: _api, session: _session!, onSignOut: _signOut),
     );
   }

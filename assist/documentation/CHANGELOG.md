@@ -2,11 +2,29 @@
 
 ## Version State
 
-Current version: 1.0.2
+Current version: 1.0.3
 
-Release tag: v-1.0.2
+Release tag: v-1.0.3
 
-Changelog label: v 1.0.2
+Changelog label: v 1.0.3
+
+## v-1.0.3
+
+### [v 1.0.3] 2026-08-28 11:50 am - Mobile production release
+
+#### Database Changes
+
+- Database update: No.
+
+#### App Codebase Changes
+
+- Bumped repository version to 1.0.3.
+- Published the Cloud-locked Flutter production build as version 1.0.3.
+- Kept Android build number 10011 so newer installed builds can accept the update.
+- Renamed the production APK to `logicx-loom-v1.0.3.apk`.
+- Connected mobile login, Dashboard, and Messenger to `https://log.logicx.in`.
+- Added the white Messenger layout, blue actions, and light-blue chat background.
+- Kept the single-color `#305DDD` launcher logo without a dark background.
 
 ## v-1.0.2
 

@@ -227,7 +227,7 @@ test("local message media is stored below its conversation root", async () => {
   try {
     const storage = new LocalMessageMediaStorage(root, 1024);
     const stored = await storage.store(42, {
-      dataUrl: "data:text/plain;base64,SGVsbG8gVGVjaE1lZGlh",
+      dataUrl: "data:text/plain;base64,SGVsbG8gTG9naWNYIExvb20=",
       name: "welcome.txt",
       type: "text/plain"
     });

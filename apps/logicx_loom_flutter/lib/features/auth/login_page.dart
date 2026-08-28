@@ -2,20 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../core/api/logicx_loom_api.dart';
-import '../../core/config/app_config.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({
-    required this.api,
-    required this.environment,
-    required this.onEnvironmentChanged,
-    required this.onSignedIn,
-    super.key,
-  });
+  const LoginPage({required this.api, required this.onSignedIn, super.key});
 
   final LogicXLoomApi api;
-  final LogicXLoomEnvironment environment;
-  final ValueChanged<LogicXLoomEnvironment> onEnvironmentChanged;
   final ValueChanged<UserSession> onSignedIn;
 
   @override
@@ -107,27 +98,6 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   const SizedBox(height: 24),
                   Text('Welcome', style: theme.textTheme.headlineSmall),
-                  if (AppConfig.allowEnvironmentSwitch) ...[
-                    const SizedBox(height: 20),
-                    SegmentedButton<LogicXLoomEnvironment>(
-                      segments: const [
-                        ButtonSegment(
-                          value: LogicXLoomEnvironment.local,
-                          icon: Icon(Icons.lan_outlined),
-                          label: Text('Local'),
-                        ),
-                        ButtonSegment(
-                          value: LogicXLoomEnvironment.cloud,
-                          icon: Icon(Icons.cloud_outlined),
-                          label: Text('Cloud'),
-                        ),
-                      ],
-                      selected: {widget.environment},
-                      onSelectionChanged: (selection) {
-                        widget.onEnvironmentChanged(selection.single);
-                      },
-                    ),
-                  ],
                   const SizedBox(height: 32),
                   TextField(
                     controller: _email,

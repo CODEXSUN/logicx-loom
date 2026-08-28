@@ -30,17 +30,26 @@ function Get-MobileBool([string]$Name, [string]$Fallback) {
     return ((Get-MobileValue $Name $Fallback) -eq '1').ToString().ToLowerInvariant()
 }
 
+$mobileEnvironment = (Get-MobileValue 'MOBILE_APP_ENVIRONMENT' (Get-MobileValue 'NODE_ENV' 'development')).ToLowerInvariant()
+if ($mobileEnvironment -notin @('development', 'production')) {
+    throw 'MOBILE_APP_ENVIRONMENT must be development or production.'
+}
+
+$mobileApiUrl = if ($mobileEnvironment -eq 'production') {
+    Get-MobileValue 'MOBILE_PRODUCTION_API_URL' 'https://log.logicx.in/api/platform'
+} else {
+    Get-MobileValue 'MOBILE_DEVELOPMENT_API_URL' 'http://10.0.2.2:9350'
+}
+
 $defines = @(
-    "--dart-define=LOGICX_LOOM_LOCAL_API_URL=$(Get-MobileValue 'MOBILE_LOCAL_API_URL' 'http://10.0.2.2:9350')",
-    "--dart-define=LOGICX_LOOM_CLOUD_API_URL=$(Get-MobileValue 'MOBILE_CLOUD_API_URL' 'https://log.logicx.in/api/platform')",
-    "--dart-define=LOGICX_LOOM_DEFAULT_ENVIRONMENT=$(Get-MobileValue 'MOBILE_DEFAULT_ENVIRONMENT' 'local')",
-    "--dart-define=LOGICX_LOOM_ALLOW_ENVIRONMENT_SWITCH=$(Get-MobileBool 'MOBILE_ALLOW_ENVIRONMENT_SWITCH' '1')",
+    "--dart-define=LOGICX_LOOM_API_URL=$mobileApiUrl",
     "--dart-define=LOGICX_LOOM_DEVELOPMENT_AUTO_LOGIN=$(Get-MobileBool 'MOBILE_DEVELOPMENT_AUTO_LOGIN' '0')",
     "--dart-define=LOGICX_LOOM_UPDATE_URL=$(Get-MobileValue 'MOBILE_UPDATE_URL' 'https://log.logicx.in/storage/mobile/release/update.json')"
 )
 
 Push-Location $flutterProject
 try {
+    Write-Host "Building LogicX Loom Flutter for $mobileEnvironment."
     switch ($Mode) {
         'run' { & $flutterCommand run -d $Device @defines }
         'debug' { & $flutterCommand build apk --debug @defines }

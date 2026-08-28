@@ -1,6 +1,6 @@
 {
   "name": "@codexsun/framework",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "private": true,
   "description": "LogicX Loom-owned framework runtime and stable application contracts",
   "type": "module",

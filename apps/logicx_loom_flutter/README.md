@@ -13,12 +13,11 @@ Node API, then run the Flutter app on the Android emulator:
 .\tools\flutter-mobile.ps1 run
 ```
 
-`10.0.2.2` is the Android emulator route to the computer's localhost. The local
-URL points to the API root without `/api/platform`; that prefix belongs to the
-cloud reverse proxy. The login page can switch between `MOBILE_LOCAL_API_URL` and
-`MOBILE_CLOUD_API_URL`. `MOBILE_DEFAULT_ENVIRONMENT` controls the initial
-selection. Set `MOBILE_ALLOW_ENVIRONMENT_SWITCH=0` to lock the configured
-environment in a production build.
+`10.0.2.2` is the Android emulator route to the computer's localhost. The development
+URL points to the API root without `/api/platform`. That prefix belongs to the
+production reverse proxy. Set `MOBILE_APP_ENVIRONMENT` to `development` or `production`.
+The build script compiles `MOBILE_DEVELOPMENT_API_URL` or `MOBILE_PRODUCTION_API_URL`
+into the app. The installed app does not let users change the endpoint.
 Development auto-login is available only for local API addresses and is off by
 default, so it cannot activate against the production API.
 
@@ -38,8 +37,8 @@ default, so it cannot activate against the production API.
 
 ## Publish an Android update
 
-Build the APK with a higher version and build number. Copy it to
-`storage/mobile/release/logicx-loom.apk`. Update `update.json` with the APK checksum and size.
+Build the APK with a higher build number. Copy it to
+`storage/mobile/release/logicx-loom-v1.0.3.apk`. Update `update.json` with the APK checksum and size.
 
 All releases must use the same Android signing key. Android rejects an APK signed with another
 key.

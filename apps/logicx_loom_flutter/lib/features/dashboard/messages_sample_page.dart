@@ -7,6 +7,7 @@ import '../../core/api/messaging_realtime_client.dart';
 
 const _brandBlue = Color(0xFF305DDD);
 const _softBlue = Color(0xFFE8EEFF);
+const _chatBlue = Color(0xFFEEF3FF);
 
 class MessageNotificationButton extends StatelessWidget {
   const MessageNotificationButton({
@@ -107,10 +108,14 @@ class _MessagesSamplePageState extends State<MessagesSamplePage> {
         );
       },
     );
-    if (widget.embedded) return content;
-    return Scaffold(
-      appBar: AppBar(title: const Text('Messenger')),
-      body: content,
+    final surface = Material(color: Colors.white, child: content);
+    if (widget.embedded) return surface;
+    return Theme(
+      data: _messengerTheme,
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Messenger')),
+        body: surface,
+      ),
     );
   }
 }
@@ -234,59 +239,68 @@ class _ConversationThreadState extends State<_ConversationThread> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: Text(widget.conversation.title)),
-    body: FutureBuilder<List<MessagingMessage>>(
-      future: _messages,
-      builder: (context, snapshot) {
-        if (snapshot.hasError)
-          return Center(
-            child: FilledButton.tonal(
-              onPressed: _refresh,
-              child: const Text('Retry messages'),
-            ),
-          );
-        if (!snapshot.hasData)
-          return const Center(child: CircularProgressIndicator());
-        final messages = snapshot.data!;
-        return ListView.separated(
-          reverse: true,
-          padding: const EdgeInsets.fromLTRB(16, 14, 16, 18),
-          itemCount: messages.length,
-          separatorBuilder: (context, index) => const SizedBox(height: 8),
-          itemBuilder: (context, index) => _MessageBubble(
-            message: messages[messages.length - index - 1],
-            mine:
-                messages[messages.length - index - 1].senderEmail
-                    .toLowerCase() ==
-                widget.session.profile.email.toLowerCase(),
-          ),
-        );
-      },
-    ),
-    bottomNavigationBar: SafeArea(
-      top: false,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(12, 8, 12, 10),
-        child: Row(
-          children: [
-            Expanded(
-              child: TextField(
-                controller: _composer,
-                minLines: 1,
-                maxLines: 4,
-                decoration: const InputDecoration(
-                  hintText: 'Write a message',
-                  border: OutlineInputBorder(),
+  Widget build(BuildContext context) => Theme(
+    data: _messengerTheme,
+    child: Scaffold(
+      appBar: AppBar(title: Text(widget.conversation.title)),
+      body: ColoredBox(
+        color: _chatBlue,
+        child: FutureBuilder<List<MessagingMessage>>(
+          future: _messages,
+          builder: (context, snapshot) {
+            if (snapshot.hasError)
+              return Center(
+                child: FilledButton.tonal(
+                  onPressed: _refresh,
+                  child: const Text('Retry messages'),
                 ),
+              );
+            if (!snapshot.hasData)
+              return const Center(child: CircularProgressIndicator());
+            final messages = snapshot.data!;
+            return ListView.separated(
+              reverse: true,
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 18),
+              itemCount: messages.length,
+              separatorBuilder: (context, index) => const SizedBox(height: 8),
+              itemBuilder: (context, index) => _MessageBubble(
+                message: messages[messages.length - index - 1],
+                mine:
+                    messages[messages.length - index - 1].senderEmail
+                        .toLowerCase() ==
+                    widget.session.profile.email.toLowerCase(),
               ),
+            );
+          },
+        ),
+      ),
+      bottomNavigationBar: ColoredBox(
+        color: Colors.white,
+        child: SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(12, 8, 12, 10),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _composer,
+                    minLines: 1,
+                    maxLines: 4,
+                    decoration: const InputDecoration(
+                      hintText: 'Write a message',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                IconButton.filled(
+                  onPressed: _isSending ? null : _send,
+                  icon: const Icon(Icons.send),
+                ),
+              ],
             ),
-            const SizedBox(width: 8),
-            IconButton.filled(
-              onPressed: _isSending ? null : _send,
-              icon: const Icon(Icons.send),
-            ),
-          ],
+          ),
         ),
       ),
     ),
@@ -302,7 +316,8 @@ class _MessageBubble extends StatelessWidget {
     alignment: mine ? Alignment.centerRight : Alignment.centerLeft,
     child: DecoratedBox(
       decoration: BoxDecoration(
-        color: mine ? _brandBlue : const Color(0xFFF3F5F9),
+        color: mine ? _brandBlue : Colors.white,
+        border: mine ? null : Border.all(color: const Color(0xFFD7E1F5)),
         borderRadius: BorderRadius.circular(15),
       ),
       child: Padding(
@@ -344,3 +359,28 @@ String _initials(String name) => name
     .toUpperCase();
 String _messageTime(DateTime value) =>
     '${value.toLocal().hour.toString().padLeft(2, '0')}:${value.toLocal().minute.toString().padLeft(2, '0')}';
+
+final _messengerTheme = ThemeData(
+  brightness: Brightness.light,
+  colorScheme: ColorScheme.fromSeed(
+    brightness: Brightness.light,
+    seedColor: _brandBlue,
+    primary: _brandBlue,
+    surface: Colors.white,
+  ),
+  scaffoldBackgroundColor: Colors.white,
+  appBarTheme: const AppBarTheme(
+    backgroundColor: _brandBlue,
+    foregroundColor: Colors.white,
+    surfaceTintColor: Colors.transparent,
+  ),
+  inputDecorationTheme: InputDecorationTheme(
+    filled: true,
+    fillColor: Colors.white,
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(color: Color(0xFFD7E1F5)),
+    ),
+  ),
+  useMaterial3: true,
+);

@@ -11,7 +11,7 @@ import { useMessagingConversationsQuery, useMessagesQuery } from "./messaging.ho
 import { createConversation, markConversationRead, reactToMessage, sendMessage } from "./messaging.services";
 import type { Conversation, Message, MessageType } from "./messaging.types";
 
-export function MessagingWorkspace({ actorEmail }: { actorEmail: string }) {
+export function MessagingWorkspace({ actorEmail, canManageUsers = false }: { actorEmail: string; canManageUsers?: boolean }) {
   const conversations = useMessagingConversationsQuery();
   const [activeId, setActiveId] = useState<number | null>(null);
   const [composing, setComposing] = useState(false);
@@ -37,7 +37,7 @@ export function MessagingWorkspace({ actorEmail }: { actorEmail: string }) {
 
   return (
     <WorkspacePage className="!w-full !max-w-none !space-y-0 !py-0" technicalName="page.messaging.inbox" title="">
-      <div className="relative flex h-[calc(100vh-4rem)] min-h-[540px] overflow-hidden bg-background">
+      <div className="relative flex h-[calc(100vh-4rem)] min-h-[540px] overflow-hidden bg-white">
         <aside className={`${sidebarOpen ? "flex" : "hidden"} w-full shrink-0 flex-col border-r bg-background lg:flex lg:w-[360px]`}>
           {composing ? (
             <NewConversationComposer
@@ -64,12 +64,12 @@ export function MessagingWorkspace({ actorEmail }: { actorEmail: string }) {
                 <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                 <Input aria-label="Search conversations" className="h-10 rounded-full border-0 bg-muted pl-9 shadow-none" onChange={(event) => setSearch(event.target.value)} placeholder="Search or start a new chat" value={search} />
               </label>
-              <ConversationList actorEmail={actorEmail} conversations={filtered} loading={conversations.isLoading} onSelect={(id) => { setComposing(false); setActiveId(id); setSidebarOpen(false); }} selectedId={activeId} />
+              <ConversationList actorEmail={actorEmail} canManageUsers={canManageUsers} conversations={filtered} loading={conversations.isLoading} onSelect={(id) => { setComposing(false); setActiveId(id); setSidebarOpen(false); }} selectedId={activeId} />
             </>
           )}
         </aside>
-        <main className={`${sidebarOpen ? "hidden" : "flex"} min-w-0 flex-1 flex-col lg:flex`}>
-          {active ? <Thread actorEmail={actorEmail} conversation={active} initialMessages={messagesByConversation[active.id] ?? []} onBack={() => setSidebarOpen(true)} onMessagesChange={updateMessages} onRead={refreshConversations} /> : <EmptyState />}
+    <main className={`${sidebarOpen ? "hidden" : "flex"} min-w-0 flex-1 flex-col bg-white lg:flex`}>
+          {active ? <Thread actorEmail={actorEmail} conversation={active} initialMessages={messagesByConversation[active.id] ?? []} onBack={() => setSidebarOpen(true)} onMessagesChange={updateMessages} onRead={refreshConversations} /> : <EmptyState canManageUsers={canManageUsers} onStart={() => { setComposing(true); setSidebarOpen(true); }} />}
         </main>
       </div>
     </WorkspacePage>
@@ -122,7 +122,7 @@ function Thread({ actorEmail, conversation, initialMessages, onBack, onMessagesC
     try { const message = await sendMessage(conversation.id, { clientMessageId, content, metadata: deliveryMetadata, ...(replyToMessageId ? { replyToMessageId } : {}), type }); onMessagesChange(conversation.id, mergeMessages(messagesRef.current, [message])); await forwardToMentionedUsers(conversation, content, type, deliveryMetadata); onRead(); return true; }
     catch { return false; }
   };
-  return <><ThreadHeader actorEmail={actorEmail} conversation={conversation} onBack={onBack} onSearch={() => setSearchOpen(true)} status={status} />{searchOpen ? <ThreadSearch count={visibleMessages.length} onChange={setMessageSearch} onClose={() => { setSearchOpen(false); setMessageSearch(""); }} value={messageSearch} /> : null}<div aria-live="polite" className="flex-1 space-y-1 overflow-y-auto bg-muted/20 p-4 md:p-6">{history.isLoading && !initialMessages.length ? <p className="text-center text-sm text-muted-foreground">Loading messages…</p> : null}{messageSearch.trim() && !visibleMessages.length ? <p className="py-12 text-center text-sm text-muted-foreground">No matching messages</p> : null}{visibleMessages.map((message, index) => <Fragment key={message.id}>{startsNewDay(message, visibleMessages[index - 1]) ? <DateSeparator value={message.createdAt} /> : null}<MessageBubble message={message} mine={message.senderEmail === actorEmail} onReact={(emoji) => void reactToMessage(conversation.id, message.id, emoji).then((updated) => onMessagesChange(conversation.id, mergeMessages(messagesRef.current, [updated]))) } /></Fragment>)}<div ref={bottomRef} /></div><ThreadComposer onSend={submit} /></>;
+  return <><ThreadHeader actorEmail={actorEmail} conversation={conversation} onBack={onBack} onSearch={() => setSearchOpen(true)} status={status} />{searchOpen ? <ThreadSearch count={visibleMessages.length} onChange={setMessageSearch} onClose={() => { setSearchOpen(false); setMessageSearch(""); }} value={messageSearch} /> : null}<div aria-live="polite" className="flex-1 space-y-1 overflow-y-auto bg-[#eef3ff] p-4 md:p-6">{history.isLoading && !initialMessages.length ? <p className="text-center text-sm text-muted-foreground">Loading messages…</p> : null}{messageSearch.trim() && !visibleMessages.length ? <p className="py-12 text-center text-sm text-muted-foreground">No matching messages</p> : null}{visibleMessages.map((message, index) => <Fragment key={message.id}>{startsNewDay(message, visibleMessages[index - 1]) ? <DateSeparator value={message.createdAt} /> : null}<MessageBubble message={message} mine={message.senderEmail === actorEmail} onReact={(emoji) => void reactToMessage(conversation.id, message.id, emoji).then((updated) => onMessagesChange(conversation.id, mergeMessages(messagesRef.current, [updated]))) } /></Fragment>)}<div ref={bottomRef} /></div><ThreadComposer onSend={submit} /></>;
 }
 
 async function forwardToMentionedUsers(conversation: Conversation, content: string, type: MessageType, metadata: Record<string, unknown>) {
@@ -147,7 +147,7 @@ function enrichMentionDelivery(conversation: Conversation, metadata: Record<stri
   return { ...metadata, deliveryRecipients: [...new Set([...conversation.members.map((member) => member.userName), ...names])] };
 }
 
-function EmptyState() { return <div className="flex h-full min-h-[620px] flex-1 items-center justify-center bg-muted/10"><span className="grid size-16 place-items-center rounded-full bg-primary/10 text-primary"><MessageSquareText className="size-8" /></span></div>; }
+function EmptyState({ canManageUsers, onStart }: { canManageUsers: boolean; onStart: () => void }) { return <div className="flex h-full min-h-[540px] flex-1 flex-col items-center justify-center gap-4 bg-muted/10 px-6 text-center"><span className="grid size-16 place-items-center rounded-full bg-primary/10 text-primary"><MessageSquareText className="size-8" /></span><div className="space-y-1"><h2 className="text-lg font-semibold">Your messages</h2><p className="max-w-sm text-sm text-muted-foreground">Start a private chat with an active LogicX Loom user.</p></div><div className="flex flex-wrap justify-center gap-2"><Button onClick={onStart} type="button">Start a chat</Button>{canManageUsers ? <Button onClick={() => window.location.assign("/app/identity/users")} type="button" variant="outline">Manage users</Button> : null}</div></div>; }
 function ThreadSearch({ count, onChange, onClose, value }: { count: number; onChange: (value: string) => void; onClose: () => void; value: string }) { return <div className="flex h-14 items-center gap-2 border-b bg-background px-3 md:px-4"><label className="relative min-w-0 flex-1"><Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" /><Input aria-label="Search messages in conversation" autoFocus className="h-9 rounded-full bg-muted/60 pl-9 pr-4" onChange={(event) => onChange(event.target.value)} onKeyDown={(event) => { if (event.key === "Escape") onClose(); }} placeholder="Search this conversation" value={value} /></label><span aria-live="polite" className="w-16 shrink-0 text-center text-xs text-muted-foreground">{value.trim() ? `${count} found` : ""}</span><Button aria-label="Close message search" onClick={onClose} size="icon" type="button" variant="ghost"><X className="size-4" /></Button></div>; }
 function DateSeparator({ value }: { value: string }) { const date = new Date(value); const today = new Date(); const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1); const label = date.toDateString() === today.toDateString() ? "Today" : date.toDateString() === yesterday.toDateString() ? "Yesterday" : date.toLocaleDateString([], { day: "numeric", month: "short", year: date.getFullYear() === today.getFullYear() ? undefined : "numeric" }); return <div className="flex justify-center py-3"><time className="rounded-lg bg-background px-3 py-1 text-xs font-medium text-muted-foreground shadow-sm" dateTime={date.toISOString()}>{label}</time></div>; }
 function startsNewDay(message: Message, previous?: Message) { return !previous || new Date(message.createdAt).toDateString() !== new Date(previous.createdAt).toDateString(); }
