@@ -27,6 +27,8 @@ Changelog label: v 1.0.3
 - Kept the single-color `#305DDD` launcher logo without a dark background.
 - Removed the Loom machine-key restriction from `POST /loomdata` during testing so every valid JSON
   payload is stored unchanged for later field processing.
+- Rebuilt the v1.0.3 Android production package as build 10012 with the corrected
+  `https://log.logicx.in/api/platform` mobile API URL.
 
 ## v-1.0.2
 

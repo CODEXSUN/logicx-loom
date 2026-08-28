@@ -1,14 +1,14 @@
 {
   "version": "1.0.3",
-  "buildNumber": 10011,
+  "buildNumber": 10012,
   "apkUrl": "/storage/mobile/release/logicx-loom-v1.0.3.apk",
-  "sha256": "bad7b209582294c62cbd69ebb146923ed852377f4840895604a46bd35688d184",
+  "sha256": "0b100ac96f61692c897a19b68836e0cd2b1438bc3a377c48ea1e0623504d7e20",
   "sizeBytes": 53756960,
-  "publishedAt": "2026-08-28T06:22:04Z",
+  "publishedAt": "2026-08-28T09:16:52Z",
   "required": false,
   "notes": [
     "Publishes the LogicX Loom mobile production release as version 1.0.3.",
-    "Connects only to the secure https://log.logicx.in Cloud API.",
+    "Connects to the secure https://log.logicx.in Cloud API using the corrected production URL.",
     "Includes the white Messenger layout and light-blue chat background."
   ]
 }
