@@ -1,11 +1,8 @@
-import { timingSafeEqual } from "node:crypto";
-import type { FastifyInstance, FastifyRequest } from "fastify";
-import { AppError } from "@codexsun/framework/errors";
+import type { FastifyInstance } from "fastify";
 import { registerContractRoute } from "@codexsun/framework/http";
 import { z } from "zod";
 import { identityContext } from "../../auth/identity-context.js";
 import { getLogicXLoomDatabase } from "../../database/logicx-loom-database.js";
-import { env } from "../../env.js";
 import { LoomDataRepository } from "./loom-data.repository.js";
 
 const jsonValue = z.json();
@@ -32,7 +29,6 @@ export function registerLoomDataRoutes(app: FastifyInstance) {
     url: "/loomdata",
     schemas: { body: jsonValue, response: event },
     handler: ({ body, request }) => {
-      authorizeMachine(request);
       return repository.create({
         payload: body,
         sourceIp: request.ip,
@@ -49,18 +45,4 @@ export function registerLoomDataRoutes(app: FastifyInstance) {
       return repository.page(input.limit, input.beforeId);
     }
   });
-}
-
-function authorizeMachine(request: FastifyRequest) {
-  if (!env.LOGICX_LOOM_INGEST_KEY) return;
-  const provided = request.headers["x-loom-key"];
-  if (typeof provided !== "string" || !sameSecret(provided, env.LOGICX_LOOM_INGEST_KEY)) {
-    throw AppError.unauthorized("The Loom machine key is invalid.");
-  }
-}
-
-function sameSecret(left: string, right: string) {
-  const leftBuffer = Buffer.from(left);
-  const rightBuffer = Buffer.from(right);
-  return leftBuffer.length === rightBuffer.length && timingSafeEqual(leftBuffer, rightBuffer);
 }

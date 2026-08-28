@@ -25,6 +25,8 @@ Changelog label: v 1.0.3
 - Connected mobile login, Dashboard, and Messenger to `https://log.logicx.in`.
 - Added the white Messenger layout, blue actions, and light-blue chat background.
 - Kept the single-color `#305DDD` launcher logo without a dark background.
+- Removed the Loom machine-key restriction from `POST /loomdata` during testing so every valid JSON
+  payload is stored unchanged for later field processing.
 
 ## v-1.0.2
 

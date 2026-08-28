@@ -48,8 +48,8 @@ The endpoint accepts JSON objects, arrays, strings, numbers, booleans, and null.
 size is 1 MB. The Dashboard checks for new events every three seconds and loads older events in
 pages.
 
-Set `LOGICX_LOOM_INGEST_KEY` to protect machine writes. When it is set, each machine must send the
-same value in the `X-Loom-Key` request header.
+Machine writes to `POST /loomdata` are public and do not require an authentication header. Keep
+dashboard access authenticated so only signed-in users can read the stored event stream.
 
 Database commands:
 

@@ -21,7 +21,6 @@ const envSchema = z.object({
   LOGICX_LOOM_ALLOW_PRODUCTION_DB_RESET: z.enum(["0", "1"]).default("0"),
   LOGICX_LOOM_ENV_FILE_PATH: z.string().default(""),
   LOGICX_LOOM_INTEGRATION_ENCRYPTION_KEY: z.string().default(""),
-  LOGICX_LOOM_INGEST_KEY: z.string().default(""),
   MESSAGE_MEDIA_STORAGE_ROOT: z.string().min(1).default("./storage/messaging"),
   MESSAGE_MEDIA_MAX_UPLOAD_BYTES: z.coerce.number().int().positive().default(10 * 1024 * 1024),
   DEV_AUTO_LOGIN: z.enum(["0", "1"]).default("0"),
