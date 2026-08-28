@@ -1,0 +1,114 @@
+name: ${LOGICX_LOOM_COMPOSE_PROJECT:-logicx-loom}
+
+services:
+  verify:
+    profiles: [tools]
+    build:
+      context: ..
+      dockerfile: .container/scripts/Dockerfile.stack
+      target: verify
+      args:
+        NODE_RUNTIME_VERSION: ${NODE_RUNTIME_VERSION:-26.5.0}
+        NPM_RUNTIME_VERSION: ${NPM_RUNTIME_VERSION:-12.0.1}
+    image: ${LOGICX_LOOM_IMAGE_REGISTRY:-logicx-loom}/verify:${LOGICX_LOOM_IMAGE_TAG:-local}
+
+  mariadb:
+    image: ${MARIADB_IMAGE:-mariadb:11.8}
+    container_name: ${LOGICX_LOOM_MARIADB_CONTAINER_NAME:-logicx-loom-mariadb}
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ:-Asia/Kolkata}
+      MARIADB_DATABASE: ${DB_NAME:?DB_NAME is required}
+      MARIADB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD:?MARIADB_ROOT_PASSWORD is required}
+      MARIADB_USER: ${DB_USER:?DB_USER is required}
+    volumes:
+      - mariadb-data:/var/lib/mysql
+    networks: [logicx-loom]
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      start_period: 30s
+      retries: 12
+
+  api:
+    build:
+      context: ..
+      dockerfile: .container/scripts/Dockerfile.stack
+      target: api-runtime
+      args:
+        NODE_RUNTIME_VERSION: ${NODE_RUNTIME_VERSION:-26.5.0}
+        NPM_RUNTIME_VERSION: ${NPM_RUNTIME_VERSION:-12.0.1}
+    image: ${LOGICX_LOOM_IMAGE_REGISTRY:-logicx-loom}/api:${LOGICX_LOOM_IMAGE_TAG:-local}
+    container_name: ${LOGICX_LOOM_API_CONTAINER_NAME:-logicx-loom-api}
+    restart: unless-stopped
+    env_file:
+      - ${LOGICX_LOOM_RUNTIME_ENV_FILE:-../.env}
+    environment:
+      DEV_AUTO_LOGIN: "0"
+      NODE_ENV: production
+      TZ: ${TZ:-Asia/Kolkata}
+      PLATFORM_API_PORT: ${LOGICX_LOOM_API_INTERNAL_PORT:-9350}
+      LOGICX_LOOM_ENV_FILE_PATH: /workspace/logicx-loom/.env
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    ports:
+      - "${LOGICX_LOOM_BIND_ADDRESS:-127.0.0.1}:${LOGICX_LOOM_API_HOST_PORT:-19350}:${LOGICX_LOOM_API_INTERNAL_PORT:-9350}"
+      - "${LOGICX_LOOM_BIND_ADDRESS:-127.0.0.1}:${LOGICX_LOOM_WEBSOCKET_HOST_PORT:-19351}:${LOGICX_LOOM_API_INTERNAL_PORT:-9350}"
+    volumes:
+      - ${LOGICX_LOOM_RUNTIME_ENV_FILE:-../.env}:/workspace/logicx-loom/.env:rw
+      - codex-data:/home/node/.codex
+    networks: [logicx-loom]
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:'+process.env.PLATFORM_API_PORT+'/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
+        ]
+      interval: 10s
+      timeout: 5s
+      start_period: 90s
+      retries: 18
+
+  web:
+    build:
+      context: ..
+      dockerfile: .container/scripts/Dockerfile.stack
+      target: web-runtime
+      args:
+        NODE_RUNTIME_VERSION: ${NODE_RUNTIME_VERSION:-26.5.0}
+        NPM_RUNTIME_VERSION: ${NPM_RUNTIME_VERSION:-12.0.1}
+    image: ${LOGICX_LOOM_IMAGE_REGISTRY:-logicx-loom}/web:${LOGICX_LOOM_IMAGE_TAG:-local}
+    container_name: ${LOGICX_LOOM_WEB_CONTAINER_NAME:-logicx-loom-web}
+    restart: unless-stopped
+    environment:
+      NGINX_ENVSUBST_FILTER: LOGICX_LOOM_API
+      LOGICX_LOOM_API_CONTAINER_NAME: ${LOGICX_LOOM_API_CONTAINER_NAME:-logicx-loom-api}
+      LOGICX_LOOM_API_INTERNAL_PORT: ${LOGICX_LOOM_API_INTERNAL_PORT:-9350}
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "${LOGICX_LOOM_BIND_ADDRESS:-127.0.0.1}:${LOGICX_LOOM_WEB_HOST_PORT:-19360}:80"
+    networks: [logicx-loom]
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/health >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      start_period: 15s
+      retries: 12
+
+volumes:
+  codex-data:
+    name: ${LOGICX_LOOM_CODEX_DATA_VOLUME:-logicx-loom-codex-data}
+  mariadb-data:
+    name: ${LOGICX_LOOM_MARIADB_DATA_VOLUME:-logicx-loom-mariadb-data}
+
+networks:
+  logicx-loom:
+    name: ${LOGICX_LOOM_NETWORK:-logicx-loom-network}
+    external: ${LOGICX_LOOM_NETWORK_EXTERNAL:-false}

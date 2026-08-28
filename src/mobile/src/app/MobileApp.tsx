@@ -1,0 +1,44 @@
+import { IonApp, IonButton, IonContent, IonIcon, IonInput, IonSpinner } from "@ionic/react";
+import { briefcaseOutline, callOutline, chatbubbleEllipsesOutline, homeOutline, notificationsOutline, personOutline } from "ionicons/icons";
+import { useState } from "react";
+import { login } from "../../../platform/web/src/shared/api/platform-api";
+import { getToken } from "../../../platform/web/src/shared/api/platform-api";
+import { MobileMessenger } from "../messaging/MobileMessenger";
+import { MobileCallCapture } from "../modules/calls/MobileCallCapture";
+import { MobileMyJobs } from "../modules/crm/MobileMyJobs";
+
+type MobileTab = "calls" | "chats" | "home" | "jobs";
+
+export function MobileApp({ authenticated }: { authenticated: boolean }) {
+  const [signedIn, setSignedIn] = useState(authenticated);
+  const [email, setEmail] = useState(() => emailFromToken());
+  const [tab, setTab] = useState<MobileTab>("home");
+  return <IonApp>{signedIn ? <MobileDesk actorEmail={email} tab={tab} onTabChange={setTab} /> : <MobileLogin onSignedIn={(value) => { setEmail(value); setSignedIn(true); }} />}</IonApp>;
+}
+
+function MobileLogin({ onSignedIn }: { onSignedIn: (email: string) => void }) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [pending, setPending] = useState(false);
+  async function submit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault(); setError(""); setPending(true);
+    const result = await login({ email, password }); setPending(false);
+    if (result.success) onSignedIn(result.data.email); else setError(result.error.message);
+  }
+  return <IonContent fullscreen className="logicx-loom-surface"><main className="logicx-loom-login"><section className="logicx-loom-brand"><img alt="LogicX Loom" src="/logo/logo.svg" /><span>LogicX Loom</span></section><form className="logicx-loom-login-card" onSubmit={submit}><div><p className="logicx-loom-eyebrow">WELCOME</p><h1>Work, close at hand.</h1><p>Sign in with your LogicX Loom identity.</p></div><label>Email<IonInput autocomplete="email" fill="outline" inputmode="email" name="email" onIonInput={(event) => setEmail(event.detail.value ?? "")} placeholder="you@logicxloom.in" required type="email" value={email} /></label><label>Password<IonInput fill="outline" name="password" onIonInput={(event) => setPassword(event.detail.value ?? "")} placeholder="Your password" required type="password" value={password} /></label>{error ? <p className="logicx-loom-error">{error}</p> : null}<IonButton disabled={pending} expand="block" type="submit">{pending ? <IonSpinner name="crescent" /> : "Sign in"}</IonButton><p className="logicx-loom-secure">Securely connected to LogicX Loom</p></form></main></IonContent>;
+}
+
+function MobileDesk({ actorEmail, onTabChange, tab }: { actorEmail: string; onTabChange: (tab: MobileTab) => void; tab: MobileTab }) {
+  const [threadOpen, setThreadOpen] = useState(false);
+  const openMessages = () => onTabChange("chats");
+  const content = tab === "home" ? <Home onOpenMessages={openMessages} onOpenJobs={() => onTabChange("jobs")} /> : tab === "chats" ? <Chats actorEmail={actorEmail} onThreadChange={setThreadOpen} /> : tab === "jobs" ? <MobileMyJobs /> : <Calls />;
+  return <IonContent fullscreen className="logicx-loom-surface"><main className={threadOpen ? "logicx-loom-desk is-thread-open" : "logicx-loom-desk"}>{content}<nav className="logicx-loom-tabbar" aria-label="Main navigation"><Tab icon={homeOutline} label="Home" active={tab === "home"} onClick={() => { setThreadOpen(false); onTabChange("home"); }} /><Tab icon={callOutline} label="Calls" active={tab === "calls"} onClick={() => { setThreadOpen(false); onTabChange("calls"); }} /><Tab icon={briefcaseOutline} label="My Jobs" active={tab === "jobs"} onClick={() => { setThreadOpen(false); onTabChange("jobs"); }} /><Tab icon={chatbubbleEllipsesOutline} label="Messages" active={tab === "chats"} onClick={() => { setThreadOpen(false); onTabChange("chats"); }} /></nav></main></IonContent>;
+}
+
+function Home({ onOpenJobs, onOpenMessages }: { onOpenJobs: () => void; onOpenMessages: () => void }) { return <section className="logicx-loom-page"><p className="logicx-loom-eyebrow">TODAY</p><h1>Welcome back.</h1><p className="logicx-loom-subtitle">Your work dashboard</p><div className="logicx-loom-grid"><Feature icon={personOutline} title="My Jobs" detail="Assigned Frappe enquiries and follow-ups" onClick={onOpenJobs} /><Feature icon={chatbubbleEllipsesOutline} title="Messages" detail="Keep customer conversations moving" onClick={onOpenMessages} /><Feature icon={notificationsOutline} title="Inbox" detail="Review the latest notifications" /></div></section>; }
+function Chats({ actorEmail, onThreadChange }: { actorEmail: string; onThreadChange: (value: boolean) => void }) { return <MobileMessenger actorEmail={actorEmail} onThreadChange={onThreadChange} />; }
+function Calls() { return <MobileCallCapture />; }
+function Feature({ detail, icon, onClick, title }: { detail: string; icon: string; onClick?: () => void; title: string }) { const content = <><span><IonIcon icon={icon} /></span><div><h2>{title}</h2><p>{detail}</p></div></>; return onClick ? <button aria-label={`Open ${title}`} className="logicx-loom-feature logicx-loom-feature-action" onClick={onClick} type="button">{content}</button> : <article className="logicx-loom-feature">{content}</article>; }
+function Tab({ active, icon, label, onClick }: { active: boolean; icon: string; label: string; onClick: () => void }) { return <button className={active ? "is-active" : ""} onClick={onClick} type="button"><IonIcon icon={icon} /><span>{label}</span></button>; }
+function emailFromToken() { try { const token = getToken(); const payload = token?.split(".")[1]; return payload ? JSON.parse(atob(payload.replace(/-/gu, "+").replace(/_/gu, "/"))).email ?? "" : ""; } catch { return ""; } }

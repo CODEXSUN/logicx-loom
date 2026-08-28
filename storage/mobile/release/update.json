@@ -1,0 +1,14 @@
+{
+  "version": "1.0.7",
+  "buildNumber": 10007,
+  "apkUrl": "/storage/mobile/release/logicx-loom.apk",
+  "sha256": "59dd0a75607db7ecbfed3d9addb98643f0e3297bdf99073e76cff2d7b6d5e9d4",
+  "sizeBytes": 53855596,
+  "publishedAt": "2026-08-28T05:21:21Z",
+  "required": false,
+  "notes": [
+    "Fixes the Local API route to use the development server root.",
+    "Allows Android HTTP access only for emulator and localhost development addresses.",
+    "Keeps the Cloud API on the secure reverse-proxy route."
+  ]
+}

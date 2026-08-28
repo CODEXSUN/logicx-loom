@@ -1,0 +1,316 @@
+@import "@codexsun/ui/styles.css";
+
+@source ".";
+@source "../../../../../core/web/src";
+
+:root {
+  color-scheme: light;
+  --background: #ffffff;
+  --foreground: #111827;
+  --card: #ffffff;
+  --card-foreground: #111827;
+  --popover: #ffffff;
+  --popover-foreground: #111827;
+  --primary: #305ddd;
+  --primary-foreground: #ffffff;
+  --secondary: #f5f7fb;
+  --secondary-foreground: #1f2937;
+  --muted: #f3f5f9;
+  --muted-foreground: #667085;
+  --accent: #eef3ff;
+  --accent-foreground: #2349b6;
+  --border: #dce2ec;
+  --input: #cfd7e6;
+  --ring: #305ddd;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #1f2937;
+  --sidebar-primary: #305ddd;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #eef3ff;
+  --sidebar-accent-foreground: #2349b6;
+  --sidebar-border: #dce2ec;
+  --sidebar-ring: #305ddd;
+}
+
+.simple-page {
+  align-items: center;
+  display: grid;
+  justify-items: center;
+  min-height: 100vh;
+  padding: 24px;
+}
+
+.simple-page > section,
+.simple-page > div {
+  width: min(520px, 100%);
+}
+
+.status-list {
+  align-items: center;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 150px minmax(0, 1fr);
+}
+
+.status-list span {
+  color: var(--muted-foreground);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.auth-form {
+  display: grid;
+  gap: 14px;
+}
+
+.auth-submit {
+  margin-top: 4px;
+  width: 100%;
+}
+
+.logicx-loom-login-page {
+  align-items: center;
+  background:
+    radial-gradient(
+      circle at 16% 18%,
+      color-mix(in oklab, var(--primary) 6%, transparent),
+      transparent 30%
+    ),
+    color-mix(in oklab, var(--background) 92%, var(--primary));
+  display: grid;
+  min-height: 100vh;
+  padding: 32px;
+}
+
+.logicx-loom-login-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(380px, 0.7fr);
+  margin: 0 auto;
+  max-width: 1040px;
+  min-height: 560px;
+  overflow: hidden;
+  width: 100%;
+}
+
+.logicx-loom-login-story {
+  background:
+    radial-gradient(
+      circle at 16% 14%,
+      color-mix(in oklab, var(--primary) 12%, transparent),
+      transparent 38%
+    ),
+    linear-gradient(
+      145deg,
+      color-mix(in oklab, var(--background) 78%, var(--primary)),
+      color-mix(in oklab, var(--background) 94%, var(--primary))
+    );
+  border: 1px solid color-mix(in oklab, var(--primary) 38%, var(--border));
+  border-radius: 18px 0 0 18px;
+  color: var(--foreground);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 44px;
+}
+
+.logicx-loom-login-brand,
+.logicx-loom-login-panel-brand {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+}
+
+.logicx-loom-login-brand .auth-surface-mark {
+  filter: drop-shadow(0 8px 18px rgb(15 118 110 / 12%));
+}
+
+.logicx-loom-login-brand > span:last-child {
+  display: grid;
+  gap: 4px;
+}
+
+.logicx-loom-login-brand strong {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.logicx-loom-login-brand small {
+  color: var(--muted-foreground);
+  font-size: 12px;
+}
+
+.logicx-loom-login-slider {
+  max-width: 390px;
+}
+
+.logicx-loom-login-eyebrow {
+  align-items: center;
+  color: #305ddd;
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 650;
+  gap: 7px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.logicx-loom-login-slider p {
+  animation: logicx-loom-login-slide 360ms ease-out;
+  font-size: clamp(25px, 3vw, 38px);
+  font-weight: 650;
+  letter-spacing: -0.035em;
+  line-height: 1.16;
+  margin: 18px 0 22px;
+  min-height: 3.5em;
+}
+
+.logicx-loom-login-dots {
+  display: flex;
+  gap: 7px;
+}
+
+.logicx-loom-login-dots span {
+  background: color-mix(in oklab, var(--primary) 22%, transparent);
+  border-radius: 999px;
+  height: 3px;
+  transition:
+    width 180ms ease,
+    background-color 180ms ease;
+  width: 16px;
+}
+
+.logicx-loom-login-dots span.is-active {
+  background: var(--primary);
+  width: 34px;
+}
+
+.logicx-loom-login-footnote {
+  align-items: center;
+  color: var(--muted-foreground);
+  display: flex;
+  font-size: 12px;
+  gap: 7px;
+  margin: 0;
+}
+
+.logicx-loom-login-panel {
+  align-items: center;
+  background: color-mix(in oklab, var(--card) 96%, var(--background));
+  border: 1px solid color-mix(in oklab, var(--border) 78%, transparent);
+  border-left: 0;
+  border-radius: 0 18px 18px 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 44px 48px;
+}
+
+.logicx-loom-login-panel-brand {
+  display: none;
+  margin-bottom: 22px;
+}
+
+.logicx-loom-login-panel-brand .auth-logo-image {
+  height: 34px;
+  width: 34px;
+}
+
+.logicx-loom-login-panel-brand span {
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.logicx-loom-login-card-frame {
+  border: 0;
+  box-shadow: none;
+  max-width: 410px;
+  padding: 0;
+}
+
+.logicx-loom-login-card {
+  background: transparent;
+  border: 0;
+  padding: 0;
+}
+
+@keyframes logicx-loom-login-slide {
+  from {
+    opacity: 0;
+    transform: translateY(7px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.auth-field {
+  display: grid;
+  gap: 6px;
+}
+
+.form-error {
+  color: var(--destructive);
+  font-size: 13px;
+  margin: 0;
+}
+
+.logicx-loom-auth-logo-dark {
+  display: none;
+}
+
+.dark .logicx-loom-auth-logo-light {
+  display: none;
+}
+
+.dark .logicx-loom-auth-logo-dark {
+  display: block;
+}
+
+@media (max-width: 760px) {
+  .status-list {
+    grid-template-columns: 1fr;
+  }
+
+  .logicx-loom-login-page {
+    padding: 18px;
+  }
+
+  .logicx-loom-login-shell {
+    grid-template-columns: 1fr;
+    min-height: 0;
+  }
+
+  .logicx-loom-login-story {
+    border-radius: 16px 16px 0 0;
+    min-height: 220px;
+    padding: 26px;
+  }
+
+  .logicx-loom-login-brand,
+  .logicx-loom-login-footnote {
+    display: none;
+  }
+
+  .logicx-loom-login-slider p {
+    font-size: 24px;
+    margin-bottom: 16px;
+    min-height: 2.5em;
+  }
+
+  .logicx-loom-login-panel {
+    border-left: 1px solid color-mix(in oklab, var(--border) 78%, transparent);
+    border-radius: 0 0 16px 16px;
+    padding: 30px 24px 34px;
+  }
+
+  .logicx-loom-login-panel-brand {
+    display: flex;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .logicx-loom-login-slider p {
+    animation: none;
+  }
+}
